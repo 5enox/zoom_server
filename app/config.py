@@ -5,12 +5,13 @@ import json
 
 url = "http://127.0.0.1:5000/schedule_meeting"
 payload = {
-    "meeting_id": '554654654658',
-    "password": '12Abdocv@',
-    "time": '2:21',
-    "date": '20',
-    "duration": '10'
+    "meeting_id": "123456789",
+    "password": "meeting_password",
+    "time": "10:00:00",
+    "date": "2024-03-20",
+    "duration": "1 hour"
 }
+
 
 try:
     response = requests.post(url, json=payload)

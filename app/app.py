@@ -1,16 +1,9 @@
 from flask import Flask, request, jsonify
-from celery import Celery
+from tasks.tasks import start_meeting_container
 from datetime import datetime
 import csv
 
-
 app = Flask(__name__)
-app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
-
-celery = Celery(app.name)
-celery.conf.update(app.config)
-
 MEETINGS_FILE = 'meetings.csv'
 
 
@@ -44,24 +37,13 @@ def schedule_meeting():
             })
 
         # Schedule task to start meeting container
-        # start_meeting_container.apply_async(args=[meeting_id, data], eta=datetime.strptime(
-        #     date + ' ' + time, '%d %H:%M'))
+        start_meeting_container.apply_async(args=[meeting_id, data], eta=datetime.strptime(
+            date + ' ' + time, '%Y-%m-%d %H:%M:%S'))
 
         return jsonify({'message': 'Meeting scheduled successfully'}), 201
 
     else:
         return jsonify({'error': 'Invalid JSON payload'}), 400
-
-
-@celery.task
-def start_meeting_container(meeting_id, meeting_details):
-    """
-    Task to start Docker container for a meeting.
-    """
-    # Logic to start Docker container for meeting
-    print(f'Starting Docker container for meeting {meeting_id}')
-    print('Meeting Details:', meeting_details)
-    # Replace this with your Docker container startup logic
 
 
 if __name__ == '__main__':
