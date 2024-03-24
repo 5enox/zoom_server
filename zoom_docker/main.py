@@ -7,7 +7,10 @@ import logging
 import random
 from time import perf_counter
 import time
+from record import record
+import threading
 import requests
+from dotenv import load_dotenv
 
 NAME_LIST = [
     'iPhone',
@@ -23,52 +26,50 @@ NAME_LIST = [
     'Computer',
     'Android'
 ]
+DISPLAY_NAME = random.choice(NAME_LIST)
 
 BASE_PATH = './'
 CSV_PATH = os.path.join(BASE_PATH, "meetings.csv")
 IMG_PATH = os.path.join(BASE_PATH, "img")
-REC_PATH = os.path.join(BASE_PATH, "recordings")
-AUDIO_PATH = os.path.join(BASE_PATH, "audio")
-DEBUG_PATH = os.path.join(REC_PATH, "screenshots")
-DISPLAY_NAME = random.choice(NAME_LIST)
-################ merly a place holder replace this with working code
-os.loadenv()
+# Load environment variables from .env file
+load_dotenv()
 ##############################################################
 meeting_alive = True
 MEETING_DURATION = os.getenv('MEETING_DURATION')
 MEETING_ID = os.getenv('MEETING_ID')
 MEETING_PASSWORD = os.getenv('MEETING_PASSWORD')
 
-class BackgroundThread:
 
-    def __init__(self, interval=):
-        # Sleep interval between
-        self.interval = interval
+def upload_to_gofile(file_path):
+    url = 'https://api.gofile.io/servers'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        first_server_name = data['data']['servers'][0]['name']
+        url = f'https://{first_server_name}.gofile.io/contents/uploadfile'
+        files = {'file': open(file_path, 'rb')}
+        response = requests.post(url, files=files,)
+        data = response.json()
+        return data['data']['downloadPage']
+    else:
+        print("Error:", response.status_code)
 
-        thread = threading.Thread(target=self.run, args=())
-        thread.daemon = True  # Daemonize thread
-        thread.start()  # Start the execution
 
-    def run(self):
-        start = perf_counter()
-        while meeting_alive:
-            end = perf_counter()
-            time = end-start
-            if time > duration:
-                print(f'The Zoom Recording is Done is done in {time}')
-                meeting_alive = False
-
-            
+def BackgroundThread():
+    filename = record()
+    upload_to_gofile(filename)
 
 
 def sign_in(meet_id, password):
     logging.info("Join a meeting by ID..")
     found_join_meeting = False
     try:
-        x, y = pyautogui.locateCenterOnScreen(os.path.join(
+        result = pyautogui.locateCenterOnScreen(os.path.join(
             IMG_PATH, 'join_meeting.png'), minSearchTime=2, confidence=0.9)
-        pyautogui.click(x, y)
-        found_join_meeting = True
+        if result is not None:
+            x, y = result
+            pyautogui.click(x, y)
+            found_join_meeting = True
     except TypeError:
         pass
 
@@ -102,20 +103,14 @@ def sign_in(meet_id, password):
     pyautogui.write(password, interval=0.1)
     pyautogui.press('enter')
     time.sleep(5)
-    x, y = pyautogui.locateCenterOnScreen(os.path.join(
+    result = pyautogui.locateCenterOnScreen(os.path.join(
         IMG_PATH, 'join_with_computer_audio.png'), minSearchTime=2, confidence=0.9)
-    pyautogui.click(x, y)
-    
-def record_and_upload():
-    """
-    This Function Records Both The audio and the video and uploads them directly to gofile,
-    retrieves the links and stores them in some live json site
-    
-    """
-    
+    if result is not None:
+        x, y = result
+        pyautogui.click(x, y)
+
 
 sign_in(MEETING_ID, MEETING_PASSWORD,)
-record_and_upload()
 logging.info("Signed in..")
 BackgroundThread()
 logging.info("Started Timer")
