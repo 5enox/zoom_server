@@ -2,17 +2,13 @@
 FROM python:3.9
 
 # Set the working directory inside the container
-WORKDIR /app
+WORKDIR /flask
 
-# Copy the requirements.txt file to the working directory
-COPY requirements.txt .
+# Copy the  files to the working directory
+COPY . .
 
 # Install the required packages
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Zoom
-RUN wget https://zoom.us/client/latest/zoom_amd64.deb
-RUN dpkg -i zoom_amd64.deb
-
 # Set the entrypoint command to run Zoom
-ENTRYPOINT ["zoom"]
+ENTRYPOINT ["python3 app/app.py"]
