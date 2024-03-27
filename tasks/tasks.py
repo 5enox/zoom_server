@@ -1,24 +1,42 @@
 from celery import Celery
-from datetime import datetime
-import csv
-import Docker
-import subprocess
+import docker
 
-celery = Celery(__name__)
+# Initialize Celery
+app = Celery('tasks', broker='redis://localhost:6379/0')
+
+# Docker client
+docker_client = docker.from_env()
+
+# Celery task definition
 
 
-@celery.task
-def start_meeting_container(meeting_id, meeting_details):
-    """
-    Task to start Docker container for a meeting.
-    """
-    # Logic to start Docker container for meeting
-    print(f'Starting Docker container for meeting {meeting_id}')
-    print('Meeting Details:', meeting_details)
+@app.task
+def start_zoom_recorder(meeting_id, meeting_password, duration):
+    try:
+        # Define environment variables for the Docker container
+        environment = {
+            'MEETING_ID': meeting_id,
+            'MEETING_PASSWORD': meeting_password,
+            'DURATION': duration
+        }
 
-    # Command to start the Docker container
-    command = f"docker run -d --name {
-        meeting_id} 5enox/zoom_recorder {meeting_details}"
+        # Start the Docker container
+        container = docker_client.containers.run(
+            '5enox/zoom_recorder',
+            detach=True,
+            environment=environment,
+            # You can specify additional Docker container options here
+            # e.g., volumes, network settings, etc.
+        )
 
-    # Execute the command
-    subprocess.run(command, shell=True)
+        # Print container ID for debugging
+        print(f"Started Docker container: {container.id}")
+
+        return f"Started Docker container: {container.id}"
+    except Exception as e:
+        # Handle any exceptions gracefully
+        print(f"An error occurred: {str(e)}")
+        return None
+
+# Example usage:
+# start_zoom_recorder.delay("1234567890", "password123", "60")

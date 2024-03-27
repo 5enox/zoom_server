@@ -1,14 +1,9 @@
-import subprocess
 import pyautogui
 import time
-from datetime import datetime
 import os
 import logging
 import random
-from time import perf_counter
 import time
-from record import record
-import threading
 import requests
 from dotenv import load_dotenv
 
@@ -53,11 +48,7 @@ def upload_to_gofile(file_path):
         return data['data']['downloadPage']
     else:
         print("Error:", response.status_code)
-
-
-def BackgroundThread():
-    filename = record()
-    upload_to_gofile(filename)
+        return None
 
 
 def sign_in(meet_id, password):
@@ -112,7 +103,6 @@ def sign_in(meet_id, password):
 
 sign_in(MEETING_ID, MEETING_PASSWORD,)
 logging.info("Signed in..")
-BackgroundThread()
 logging.info("Started Timer")
 
 while meeting_alive:

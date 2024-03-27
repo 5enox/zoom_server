@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from tasks.tasks import start_meeting_container
+from tasks.tasks import start_zoom_recorder
 from datetime import datetime
 import csv
 
@@ -37,7 +37,7 @@ def schedule_meeting():
             })
 
         # Schedule task to start meeting container
-        start_meeting_container.apply_async(args=[meeting_id, data], eta=datetime.strptime(
+        start_zoom_recorder.apply_async(args=[meeting_id, password, duration], eta=datetime.strptime(
             date + ' ' + time, '%Y-%m-%d %H:%M:%S'))
 
         return jsonify({'message': 'Meeting scheduled successfully'}), 201
