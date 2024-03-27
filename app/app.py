@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
-from tasks.tasks import start_zoom_recorder
+from .tasks import start_zoom_recorder
+
 from datetime import datetime
 import csv
 

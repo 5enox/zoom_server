@@ -30,9 +30,11 @@ def start_zoom_recorder(meeting_id, meeting_password, duration):
         )
 
         # Print container ID for debugging
-        print(f"Started Docker container: {container.id}")
+        # print(f"Started Docker container: {container.id}")
+        print(f"Started Docker container")
 
-        return f"Started Docker container: {container.id}"
+        # return f"Started Docker container: {container.id}"
+        return f"Started Docker container"
     except Exception as e:
         # Handle any exceptions gracefully
         print(f"An error occurred: {str(e)}")
